@@ -2,6 +2,9 @@
 
 Hashi is a tool for downloading HashiCorp tools.
 
+[![Build Status](https://travis-ci.org/porkbeans/hashi.svg?branch=master)](https://travis-ci.org/porkbeans/hashi)
+[![Coverage Status](https://coveralls.io/repos/github/porkbeans/hashi/badge.svg?branch=master)](https://coveralls.io/github/porkbeans/hashi?branch=master)
+
 # Installation
 
 `go get -u github.com/porkbeans/hashi/cmd/hashi`
