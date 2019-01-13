@@ -177,6 +177,7 @@ var installCmd = &cobra.Command{
 		cmd.Println("Checksum Passed")
 
 		if err := extractBinaryInZip(installPath, tempFileName, product, os.Stderr); err != nil {
+			cmd.SetOutput(os.Stderr)
 			cmd.Printf("Error: %s\n", err)
 			return
 		}
