@@ -60,31 +60,31 @@ var listCmd = &cobra.Command{
 	Short: "List HashiCorp tools.",
 	Args:  cobra.MaximumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		var rawUrl string
+		var rawURL string
 		switch len(args) {
 		case 0:
-			rawUrl = urlutils.HashicorpProductList
+			rawURL = urlutils.HashicorpProductList
 		case 1:
-			rawUrl = urlutils.ProductVersionListUrl(args[0])
+			rawURL = urlutils.ProductVersionListURL(args[0])
 		case 2:
-			rawUrl = urlutils.ProductBuildListUrl(args[0], args[1])
+			rawURL = urlutils.ProductBuildListURL(args[0], args[1])
 		}
 
-		baseUrl, err := url.Parse(rawUrl)
+		baseURL, err := url.Parse(rawURL)
 		if err != nil {
 			cmd.SetOutput(os.Stderr)
 			cmd.Printf("Error: %s\n", err)
 			return
 		}
 
-		root, err := getNode(baseUrl.String())
+		root, err := getNode(baseURL.String())
 		if err != nil {
 			cmd.SetOutput(os.Stderr)
 			cmd.Printf("Error: %s\n", err)
 			return
 		}
 
-		linkList := parseutils.ParseLinkList(baseUrl, root)
+		linkList := parseutils.ParseLinkList(baseURL, root)
 
 		switch len(args) {
 		case 0:

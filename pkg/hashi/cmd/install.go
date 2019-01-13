@@ -19,8 +19,8 @@ import (
 )
 
 var (
-	TargetGOOS   string
-	TargetGOARCH string
+	targetGOOS   string
+	targetGOARCH string
 )
 
 func progressReader(reader io.Reader, size int64, printer io.Writer, prefix string) (*ioprogress.Reader) {
@@ -67,7 +67,7 @@ func downloadToTempFile(url string, printer io.Writer) (string, error) {
 }
 
 func getChecksum(product, version, goos, goarch string) ([32]byte, error) {
-	url := urlutils.ProductBuildChecksumUrl(product, version)
+	url := urlutils.ProductBuildChecksumURL(product, version)
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -139,14 +139,14 @@ var installCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		product := args[0]
 		version := args[1]
-		goos := TargetGOOS
-		goarch := TargetGOARCH
+		goos := targetGOOS
+		goarch := targetGOARCH
 		installPath := args[2]
 
-		buildUrl := urlutils.ProductBuildUrl(product, version, goos, goarch)
-		cmd.Printf("Retrieve %s\n", buildUrl)
+		buildURL := urlutils.ProductBuildURL(product, version, goos, goarch)
+		cmd.Printf("Retrieve %s\n", buildURL)
 
-		tempFileName, err := downloadToTempFile(buildUrl, os.Stderr)
+		tempFileName, err := downloadToTempFile(buildURL, os.Stderr)
 		if err != nil {
 			cmd.SetOutput(os.Stderr)
 			cmd.Printf("Error: %s\n", err)
@@ -187,6 +187,6 @@ var installCmd = &cobra.Command{
 }
 
 func init() {
-	installCmd.Flags().StringVarP(&TargetGOOS, "os", "o", runtime.GOOS, "operating system")
-	installCmd.Flags().StringVarP(&TargetGOARCH, "arch", "a", runtime.GOARCH, "architecture")
+	installCmd.Flags().StringVarP(&targetGOOS, "os", "o", runtime.GOOS, "operating system")
+	installCmd.Flags().StringVarP(&targetGOARCH, "arch", "a", runtime.GOARCH, "architecture")
 }

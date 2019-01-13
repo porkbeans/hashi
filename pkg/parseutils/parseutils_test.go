@@ -26,16 +26,16 @@ func TestParseLinkList(t *testing.T) {
 	}
 
 	expectedList := LinkList{
-		{Name: "consul", Url: urlutils.HashicorpProductList + "consul/"},
-		{Name: "nomad", Url: urlutils.HashicorpProductList + "nomad/"},
-		{Name: "packer", Url: urlutils.HashicorpProductList + "packer/"},
-		{Name: "terraform", Url: urlutils.HashicorpProductList + "terraform/"},
-		{Name: "vagrant", Url: urlutils.HashicorpProductList + "vagrant/"},
-		{Name: "vault", Url: urlutils.HashicorpProductList + "vault/"},
+		{Name: "consul", URL: urlutils.HashicorpProductList + "consul/"},
+		{Name: "nomad", URL: urlutils.HashicorpProductList + "nomad/"},
+		{Name: "packer", URL: urlutils.HashicorpProductList + "packer/"},
+		{Name: "terraform", URL: urlutils.HashicorpProductList + "terraform/"},
+		{Name: "vagrant", URL: urlutils.HashicorpProductList + "vagrant/"},
+		{Name: "vault", URL: urlutils.HashicorpProductList + "vault/"},
 	}
 
-	baseUrl, _ := url.Parse(urlutils.HashicorpProductList)
-	actualList := ParseLinkList(baseUrl, node)
+	baseURL, _ := url.Parse(urlutils.HashicorpProductList)
+	actualList := ParseLinkList(baseURL, node)
 
 	if len(expectedList) != len(actualList) {
 		t.Errorf("failed to parse list")
@@ -45,7 +45,7 @@ func TestParseLinkList(t *testing.T) {
 		if expectedList[i] != actualList[i] {
 			t.Errorf("%+v is not equal to %+v", expectedList[i], actualList[i])
 		}
-		t.Logf("%s -> %s\n", actualList[i].Name, actualList[i].Url)
+		t.Logf("%s -> %s\n", actualList[i].Name, actualList[i].URL)
 	}
 }
 
@@ -56,13 +56,13 @@ func TestLinkList_ProductVersionList(t *testing.T) {
 	}
 
 	expectedList := ProductVersionList{
-		{Name: "consul", Version: "1.4.0", Url: urlutils.HashicorpProductList + "consul/1.4.0/"},
-		{Name: "consul", Version: "1.4.0-rc1", Url: urlutils.HashicorpProductList + "consul/1.4.0-rc1/"},
-		{Name: "consul", Version: "1.3.1", Url: urlutils.HashicorpProductList + "consul/1.3.1/"},
+		{Name: "consul", Version: "1.4.0", URL: urlutils.HashicorpProductList + "consul/1.4.0/"},
+		{Name: "consul", Version: "1.4.0-rc1", URL: urlutils.HashicorpProductList + "consul/1.4.0-rc1/"},
+		{Name: "consul", Version: "1.3.1", URL: urlutils.HashicorpProductList + "consul/1.3.1/"},
 	}
 
-	baseUrl, _ := url.Parse(urlutils.HashicorpProductList)
-	linkList := ParseLinkList(baseUrl, node)
+	baseURL, _ := url.Parse(urlutils.HashicorpProductList)
+	linkList := ParseLinkList(baseURL, node)
 	actualList := linkList.ProductVersionList()
 
 	if len(expectedList) != len(actualList) {
@@ -73,7 +73,7 @@ func TestLinkList_ProductVersionList(t *testing.T) {
 		if expectedList[i] != actualList[i] {
 			t.Errorf("%+v is not equal to %+v", expectedList[i], actualList[i])
 		}
-		t.Logf("%s %s -> %s\n", actualList[i].Name, actualList[i].Version, actualList[i].Url)
+		t.Logf("%s %s -> %s\n", actualList[i].Name, actualList[i].Version, actualList[i].URL)
 	}
 }
 
@@ -83,16 +83,16 @@ func TestLinkList_ProductBuildList(t *testing.T) {
 		t.Error(err)
 	}
 
-	baseUrl, _ := url.Parse(urlutils.HashicorpProductList)
+	baseURL, _ := url.Parse(urlutils.HashicorpProductList)
 
 	expectedList := ProductBuildList{
-		{Name: "consul", Version: "1.4.0", Os: "darwin", Arch: "386", Url: urlutils.HashicorpProductList + "consul/1.4.0/consul_1.4.0_darwin_386.zip"},
-		{Name: "consul", Version: "1.4.0", Os: "darwin", Arch: "amd64", Url: urlutils.HashicorpProductList + "consul/1.4.0/consul_1.4.0_darwin_amd64.zip"},
-		{Name: "consul", Version: "1.4.0", Os: "freebsd", Arch: "386", Url: urlutils.HashicorpProductList + "consul/1.4.0/consul_1.4.0_freebsd_386.zip"},
-		{Name: "consul", Version: "1.4.0", Os: "freebsd", Arch: "amd64", Url: urlutils.HashicorpProductList + "consul/1.4.0/consul_1.4.0_freebsd_amd64.zip"},
+		{Name: "consul", Version: "1.4.0", Os: "darwin", Arch: "386", URL: urlutils.HashicorpProductList + "consul/1.4.0/consul_1.4.0_darwin_386.zip"},
+		{Name: "consul", Version: "1.4.0", Os: "darwin", Arch: "amd64", URL: urlutils.HashicorpProductList + "consul/1.4.0/consul_1.4.0_darwin_amd64.zip"},
+		{Name: "consul", Version: "1.4.0", Os: "freebsd", Arch: "386", URL: urlutils.HashicorpProductList + "consul/1.4.0/consul_1.4.0_freebsd_386.zip"},
+		{Name: "consul", Version: "1.4.0", Os: "freebsd", Arch: "amd64", URL: urlutils.HashicorpProductList + "consul/1.4.0/consul_1.4.0_freebsd_amd64.zip"},
 	}
 
-	linkList := ParseLinkList(baseUrl, node)
+	linkList := ParseLinkList(baseURL, node)
 	actualList := linkList.ProductBuildList()
 
 	if len(expectedList) != len(actualList) {
@@ -103,7 +103,7 @@ func TestLinkList_ProductBuildList(t *testing.T) {
 		if expectedList[i] != actualList[i] {
 			t.Errorf("%+v is not equal to %+v", expectedList[i], actualList[i])
 		}
-		t.Logf("%s %s %s %s -> %s\n", actualList[i].Name, actualList[i].Version, actualList[i].Os, actualList[i].Arch, actualList[i].Url)
+		t.Logf("%s %s %s %s -> %s\n", actualList[i].Name, actualList[i].Version, actualList[i].Os, actualList[i].Arch, actualList[i].URL)
 	}
 }
 

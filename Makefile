@@ -1,20 +1,23 @@
 # Phony Targets
-.PHONY: all build test coverage coveralls clean
+.PHONY: all lint build test coverage coveralls clean
 
 all: build
+
+lint:
+	golint -set_exit_status cmd/... pkg/...
 
 build: hashi
 
 test:
 	go test -covermode=count -coverprofile=cover.out ./pkg/...
 
-coverage: cover.out
+coverage: test
 	go tool cover -func=cover.out
 
-coverage-html: cover.out
+coverage-html: test
 	go tool cover -html=cover.out
 
-coveralls: cover.out
+coveralls: test
 	goveralls -coverprofile=cover.out -service=travis-ci
 
 clean:
@@ -24,5 +27,3 @@ clean:
 # File Targets
 hashi:
 	go build -o bin/hashi ./cmd/hashi
-
-cover.out: test

@@ -11,6 +11,7 @@ var rootCmd = cobra.Command{
 	Long:  "Hashi is a tool for downloading and installing HashiCorp tools.",
 }
 
+// Execute runs a hashi command.
 func Execute() {
 	rootCmd.SetOutput(os.Stdout)
 	rootCmd.AddCommand(listCmd)
