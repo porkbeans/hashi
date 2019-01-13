@@ -1,7 +1,10 @@
 # Phony Targets
-.PHONY: all build test coverage coveralls clean
+.PHONY: all lint build test coverage coveralls clean
 
 all: build
+
+lint:
+	golint -set_exit_status cmd/... pkg/...
 
 build: hashi
 
