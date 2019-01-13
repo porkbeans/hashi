@@ -7,8 +7,8 @@ import (
 
 var rootCmd = cobra.Command{
 	Use:   "hashi",
-	Short: "Download and install Hashicorp tools.",
-	Long:  "Hashi is a tool for downloading and installing Hashicorp tools.",
+	Short: "Download and install HashiCorp tools.",
+	Long:  "Hashi is a tool for downloading and installing HashiCorp tools.",
 }
 
 func Execute() {

@@ -57,7 +57,7 @@ func showProductBuildList(l parseutils.ProductBuildList, cmd *cobra.Command) {
 
 var listCmd = &cobra.Command{
 	Use:   "list [name] [version]",
-	Short: "List hashicorp tools.",
+	Short: "List HashiCorp tools.",
 	Args:  cobra.MaximumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		var rawUrl string

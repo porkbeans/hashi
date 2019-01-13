@@ -134,7 +134,7 @@ func extractBinaryInZip(dst string, src string, filenameInZip string, printer io
 
 var installCmd = &cobra.Command{
 	Use:   "install <name> <version> <path>",
-	Short: "Install hashicorp tools.",
+	Short: "Install HashiCorp tools.",
 	Args:  cobra.ExactArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		product := args[0]
