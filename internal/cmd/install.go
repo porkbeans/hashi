@@ -7,12 +7,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/mitchellh/ioprogress"
+	"github.com/porkbeans/hashi/internal/ioutils"
 	"github.com/porkbeans/hashi/pkg/parseutils"
 	"github.com/porkbeans/hashi/pkg/urlutils"
 	"github.com/spf13/cobra"
 	"io"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"runtime"
 	"time"
@@ -23,7 +23,7 @@ var (
 	targetGOARCH string
 )
 
-func progressReader(reader io.Reader, size int64, printer io.Writer, prefix string) (*ioprogress.Reader) {
+func progressReader(reader io.Reader, size int64, printer io.Writer, prefix string) *ioprogress.Reader {
 	return &ioprogress.Reader{
 		Reader:       reader,
 		Size:         size,
@@ -34,42 +34,39 @@ func progressReader(reader io.Reader, size int64, printer io.Writer, prefix stri
 	}
 }
 
-func openFileInZip(zipReader *zip.ReadCloser, filename string) (io.ReadCloser, *zip.File, error) {
-	for _, file := range zipReader.File {
-		if file.Name == filename {
-			reader, err := file.Open()
-			return reader, file, err
-		}
-	}
+func downloadToTempFile(url string, printer io.Writer) (string, [32]byte, error) {
+	checksum := [32]byte{}
 
-	return nil, nil, fmt.Errorf("%s not found in zip", filename)
-}
-
-func downloadToTempFile(url string, printer io.Writer) (string, error) {
-	resp, err := http.Get(url)
+	resp, err := ioutils.Get(url)
 	if err != nil {
-		return "", err
+		return "", checksum, err
 	}
 	defer resp.Body.Close()
 
 	tempFile, err := ioutil.TempFile("", "hashi-")
 	if err != nil {
-		return "", err
+		return "", checksum, err
 	}
 	defer tempFile.Close()
 
-	_, err = io.Copy(tempFile, progressReader(resp.Body, resp.ContentLength, printer, "Downloading..."))
+	hash := sha256.New()
+	tee := io.TeeReader(resp.Body, hash)
+
+	_, err = io.Copy(tempFile, progressReader(tee, resp.ContentLength, printer, "Downloading..."))
 	if err != nil {
-		return "", err
+		defer os.Remove(tempFile.Name())
+		return "", checksum, err
 	}
 
-	return tempFile.Name(), nil
+	copy(checksum[:], hash.Sum(nil)[0:32])
+
+	return tempFile.Name(), checksum, nil
 }
 
 func getChecksum(product, version, goos, goarch string) ([32]byte, error) {
 	url := urlutils.ProductZipChecksumURL(product, version)
 
-	resp, err := http.Get(url)
+	resp, err := ioutils.Get(url)
 	if err != nil {
 		return [32]byte{}, err
 	}
@@ -90,21 +87,15 @@ func getChecksum(product, version, goos, goarch string) ([32]byte, error) {
 	return [32]byte{}, errors.New("checksum not found")
 }
 
-func calcChecksum(filename string) ([32]byte, error) {
-	checksum := [32]byte{}
-
-	file, err := os.Open(filename)
-	if err != nil {
-		return checksum, err
+func openFileInZip(zipReader *zip.ReadCloser, filename string) (io.ReadCloser, *zip.File, error) {
+	for _, file := range zipReader.File {
+		if file.Name == filename {
+			reader, err := file.Open()
+			return reader, file, err
+		}
 	}
 
-	hash := sha256.New()
-	if _, err = io.Copy(hash, file); err != nil {
-		return checksum, err
-	}
-	copy(checksum[:], hash.Sum(nil)[0:32])
-
-	return checksum, nil
+	return nil, nil, fmt.Errorf("%s not found in zip", filename)
 }
 
 func extractBinaryInZip(dst string, src string, filenameInZip string, printer io.Writer) error {
@@ -136,7 +127,7 @@ var installCmd = &cobra.Command{
 	Use:   "install <name> <version> <path>",
 	Short: "Install HashiCorp tools.",
 	Args:  cobra.ExactArgs(3),
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		product := args[0]
 		version := args[1]
 		goos := targetGOOS
@@ -146,43 +137,28 @@ var installCmd = &cobra.Command{
 		zipURL := urlutils.ProductZipURL(product, version, goos, goarch)
 		cmd.Printf("Retrieve %s\n", zipURL)
 
-		tempFileName, err := downloadToTempFile(zipURL, os.Stderr)
+		tempFileName, actualChecksum, err := downloadToTempFile(zipURL, cmd.OutOrStderr())
 		if err != nil {
-			cmd.SetOutput(os.Stderr)
-			cmd.Printf("Error: %s\n", err)
-			return
+			return err
 		}
 		defer os.Remove(tempFileName)
 
 		expectedChecksum, err := getChecksum(product, version, goos, goarch)
 		if err != nil {
-			cmd.SetOutput(os.Stderr)
-			cmd.Printf("Error: %s\n", err)
-			return
-		}
-
-		actualChecksum, err := calcChecksum(tempFileName)
-		if err != nil {
-			cmd.SetOutput(os.Stderr)
-			cmd.Printf("Error: %s\n", err)
-			return
+			return err
 		}
 
 		if !bytes.Equal(expectedChecksum[:], actualChecksum[:]) {
-			cmd.SetOutput(os.Stderr)
-			cmd.Println("Error: checksum failed")
-			return
+			return errors.New("checksum failed")
 		}
-
 		cmd.Println("Checksum Passed")
 
-		if err := extractBinaryInZip(installPath, tempFileName, product, os.Stderr); err != nil {
-			cmd.SetOutput(os.Stderr)
-			cmd.Printf("Error: %s\n", err)
-			return
+		if err := extractBinaryInZip(installPath, tempFileName, product, cmd.OutOrStderr()); err != nil {
+			return err
 		}
 
 		cmd.Printf("Installed %s successfully to %s\n", product, installPath)
+		return nil
 	},
 }
 

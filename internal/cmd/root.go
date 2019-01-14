@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 var rootCmd = cobra.Command{
@@ -12,9 +12,15 @@ var rootCmd = cobra.Command{
 }
 
 // Execute runs a hashi command.
-func Execute() {
-	rootCmd.SetOutput(os.Stdout)
+func Execute(args []string) int {
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(installCmd)
-	rootCmd.Execute()
+
+	rootCmd.SetArgs(args)
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintf(rootCmd.OutOrStderr(), "Error: %s\n", err)
+		return 1
+	}
+
+	return 0
 }

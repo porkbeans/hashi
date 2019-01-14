@@ -1,7 +1,10 @@
 package main
 
-import "github.com/porkbeans/hashi/pkg/hashi/cmd"
+import (
+	"github.com/porkbeans/hashi/internal/cmd"
+	"os"
+)
 
 func main() {
-	cmd.Execute()
+	os.Exit(cmd.Execute(os.Args[1:]))
 }

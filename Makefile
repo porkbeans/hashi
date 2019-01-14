@@ -4,20 +4,20 @@
 all: build
 
 lint:
-	golint -set_exit_status cmd/... pkg/...
+	golint -set_exit_status cmd/... internal/... pkg/...
 
 build: hashi
 
-test:
-	go test -covermode=count -coverprofile=cover.out ./pkg/...
+test cover.out:
+	go test -covermode=count -coverprofile=cover.out ./internal/... ./pkg/...
 
-coverage: test
+coverage: cover.out
 	go tool cover -func=cover.out
 
-coverage-html: test
+coverage-html: cover.out
 	go tool cover -html=cover.out
 
-coveralls: test
+coveralls: cover.out
 	goveralls -coverprofile=cover.out -service=travis-ci
 
 clean:
