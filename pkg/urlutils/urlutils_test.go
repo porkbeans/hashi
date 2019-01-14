@@ -38,7 +38,7 @@ func TestProductVersionListUrl(t *testing.T) {
 	}
 }
 
-func TestProductBuildListUrl(t *testing.T) {
+func TestProductZipListURL(t *testing.T) {
 	testCases := parseutils.ProductVersionList{
 		{Name: "terraform", Version: "0.11.11", URL: "https://releases.hashicorp.com/terraform/0.11.11/"},
 		{Name: "vault", Version: "1.0.1", URL: "https://releases.hashicorp.com/vault/1.0.1/"},
@@ -49,7 +49,7 @@ func TestProductBuildListUrl(t *testing.T) {
 	}
 
 	for _, expected := range testCases {
-		actualURL := ProductBuildListURL(expected.Name, expected.Version)
+		actualURL := ProductZipListURL(expected.Name, expected.Version)
 
 		if actualURL == expected.URL {
 			t.Logf("%s %s -> %s", expected.Name, expected.Version, actualURL)
@@ -59,7 +59,7 @@ func TestProductBuildListUrl(t *testing.T) {
 	}
 }
 
-func TestProductBuildChecksumUrl(t *testing.T) {
+func TestProductZipChecksumURL(t *testing.T) {
 	testCases := parseutils.ProductVersionList{
 		{Name: "terraform", Version: "0.11.11", URL: "https://releases.hashicorp.com/terraform/0.11.11/terraform_0.11.11_SHA256SUMS"},
 		{Name: "vault", Version: "1.0.1", URL: "https://releases.hashicorp.com/vault/1.0.1/vault_1.0.1_SHA256SUMS"},
@@ -70,7 +70,7 @@ func TestProductBuildChecksumUrl(t *testing.T) {
 	}
 
 	for _, expected := range testCases {
-		actualURL := ProductBuildChecksumURL(expected.Name, expected.Version)
+		actualURL := ProductZipChecksumURL(expected.Name, expected.Version)
 
 		if actualURL == expected.URL {
 			t.Logf("%s %s -> %s", expected.Name, expected.Version, actualURL)
@@ -80,8 +80,8 @@ func TestProductBuildChecksumUrl(t *testing.T) {
 	}
 }
 
-func TestProductBuildUrl(t *testing.T) {
-	testCases := parseutils.ProductBuildList{
+func TestProductZipURL(t *testing.T) {
+	testCases := parseutils.ProductZipList{
 		{Name: "terraform", Version: "0.11.11", Os: "linux", Arch: "amd64", URL: "https://releases.hashicorp.com/terraform/0.11.11/terraform_0.11.11_linux_amd64.zip"},
 		{Name: "vault", Version: "1.0.1", Os: "linux", Arch: "amd64", URL: "https://releases.hashicorp.com/vault/1.0.1/vault_1.0.1_linux_amd64.zip"},
 		{Name: "consul", Version: "1.4.0", Os: "linux", Arch: "amd64", URL: "https://releases.hashicorp.com/consul/1.4.0/consul_1.4.0_linux_amd64.zip"},
@@ -91,7 +91,7 @@ func TestProductBuildUrl(t *testing.T) {
 	}
 
 	for _, expected := range testCases {
-		actualURL := ProductBuildURL(expected.Name, expected.Version, expected.Os, expected.Arch)
+		actualURL := ProductZipURL(expected.Name, expected.Version, expected.Os, expected.Arch)
 
 		if actualURL == expected.URL {
 			t.Logf("%s %s -> %s", expected.Name, expected.Version, actualURL)

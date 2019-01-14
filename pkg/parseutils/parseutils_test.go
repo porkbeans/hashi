@@ -77,15 +77,15 @@ func TestLinkList_ProductVersionList(t *testing.T) {
 	}
 }
 
-func TestLinkList_ProductBuildList(t *testing.T) {
-	node, err := getNodeFromFile("testdata/product_build_list.html")
+func TestLinkList_ProductZipList(t *testing.T) {
+	node, err := getNodeFromFile("testdata/product_zip_list.html")
 	if err != nil {
 		t.Error(err)
 	}
 
 	baseURL, _ := url.Parse(urlutils.HashicorpProductList)
 
-	expectedList := ProductBuildList{
+	expectedList := ProductZipList{
 		{Name: "consul", Version: "1.4.0", Os: "darwin", Arch: "386", URL: urlutils.HashicorpProductList + "consul/1.4.0/consul_1.4.0_darwin_386.zip"},
 		{Name: "consul", Version: "1.4.0", Os: "darwin", Arch: "amd64", URL: urlutils.HashicorpProductList + "consul/1.4.0/consul_1.4.0_darwin_amd64.zip"},
 		{Name: "consul", Version: "1.4.0", Os: "freebsd", Arch: "386", URL: urlutils.HashicorpProductList + "consul/1.4.0/consul_1.4.0_freebsd_386.zip"},
@@ -93,7 +93,7 @@ func TestLinkList_ProductBuildList(t *testing.T) {
 	}
 
 	linkList := ParseLinkList(baseURL, node)
-	actualList := linkList.ProductBuildList()
+	actualList := linkList.ProductZipList()
 
 	if len(expectedList) != len(actualList) {
 		t.Errorf("failed to parse list")

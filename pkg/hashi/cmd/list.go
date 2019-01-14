@@ -43,14 +43,14 @@ func showProductVersionList(l parseutils.ProductVersionList, cmd *cobra.Command)
 	}
 }
 
-func showProductBuildList(l parseutils.ProductBuildList, cmd *cobra.Command) {
-	for _, buildLink := range l {
+func showProductZipList(l parseutils.ProductZipList, cmd *cobra.Command) {
+	for _, zipLink := range l {
 		mark := ""
-		if buildLink.Os == runtime.GOOS && buildLink.Arch == runtime.GOARCH {
+		if zipLink.Os == runtime.GOOS && zipLink.Arch == runtime.GOARCH {
 			mark = "*"
 		}
 
-		cmd.Printf("%s %s %s\n", buildLink.Os, buildLink.Arch, mark)
+		cmd.Printf("%s %s %s\n", zipLink.Os, zipLink.Arch, mark)
 
 	}
 }
@@ -67,7 +67,7 @@ var listCmd = &cobra.Command{
 		case 1:
 			rawURL = urlutils.ProductVersionListURL(args[0])
 		case 2:
-			rawURL = urlutils.ProductBuildListURL(args[0], args[1])
+			rawURL = urlutils.ProductZipListURL(args[0], args[1])
 		}
 
 		baseURL, err := url.Parse(rawURL)
@@ -92,7 +92,7 @@ var listCmd = &cobra.Command{
 		case 1:
 			showProductVersionList(linkList.ProductVersionList(), cmd)
 		case 2:
-			showProductBuildList(linkList.ProductBuildList(), cmd)
+			showProductZipList(linkList.ProductZipList(), cmd)
 		}
 	},
 }

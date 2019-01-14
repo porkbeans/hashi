@@ -67,7 +67,7 @@ func downloadToTempFile(url string, printer io.Writer) (string, error) {
 }
 
 func getChecksum(product, version, goos, goarch string) ([32]byte, error) {
-	url := urlutils.ProductBuildChecksumURL(product, version)
+	url := urlutils.ProductZipChecksumURL(product, version)
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -143,10 +143,10 @@ var installCmd = &cobra.Command{
 		goarch := targetGOARCH
 		installPath := args[2]
 
-		buildURL := urlutils.ProductBuildURL(product, version, goos, goarch)
-		cmd.Printf("Retrieve %s\n", buildURL)
+		zipURL := urlutils.ProductZipURL(product, version, goos, goarch)
+		cmd.Printf("Retrieve %s\n", zipURL)
 
-		tempFileName, err := downloadToTempFile(buildURL, os.Stderr)
+		tempFileName, err := downloadToTempFile(zipURL, os.Stderr)
 		if err != nil {
 			cmd.SetOutput(os.Stderr)
 			cmd.Printf("Error: %s\n", err)

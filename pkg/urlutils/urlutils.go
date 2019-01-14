@@ -26,7 +26,7 @@ func ProductVersionListURL(product string) string {
 }
 
 /*
-ProductBuildListURL returns a URL containing build list of specified HashiCorp product's version.
+ProductZipListURL returns a URL containing zip file list of specified HashiCorp product's version.
 
 URL Examples
 
@@ -37,12 +37,12 @@ URL Examples
   https://releases.hashicorp.com/vagrant/2.2.3/
   https://releases.hashicorp.com/vault/1.0.1/
 */
-func ProductBuildListURL(product string, version string) string {
+func ProductZipListURL(product string, version string) string {
 	return fmt.Sprintf("%s%s/%s/", HashicorpProductList, product, version)
 }
 
 /*
-ProductBuildChecksumURL returns a checksum URL of specified HashiCorp product's version.
+ProductZipChecksumURL returns a checksum URL of specified HashiCorp product's version.
 
 URL Examples
 
@@ -53,12 +53,12 @@ URL Examples
   https://releases.hashicorp.com/vagrant/2.2.3/vagrant_2.2.3_SHA256SUMS
   https://releases.hashicorp.com/vault/1.0.1/vault_1.0.1_SHA256SUMS
 */
-func ProductBuildChecksumURL(product string, version string) string {
+func ProductZipChecksumURL(product string, version string) string {
 	return fmt.Sprintf("%s%s/%s/%s_%s_SHA256SUMS", HashicorpProductList, product, version, product, version)
 }
 
 /*
-ProductBuildURL returns a build file URL of specified HashiCorp product's version.
+ProductZipURL returns a zip file URL of specified HashiCorp product's version.
 
 URL Examples
 
@@ -69,6 +69,6 @@ URL Examples
   https://releases.hashicorp.com/vagrant/2.2.3/vagrant_2.2.3_linux_amd64.zip
   https://releases.hashicorp.com/vault/1.0.1/vault_1.0.1_linux_amd64.zip
 */
-func ProductBuildURL(product string, version string, os string, arch string) string {
+func ProductZipURL(product string, version string, os string, arch string) string {
 	return fmt.Sprintf("%s%s/%s/%s_%s_%s_%s.zip", HashicorpProductList, product, version, product, version, os, arch)
 }

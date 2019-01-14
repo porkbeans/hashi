@@ -21,7 +21,7 @@ hashi list
 # List versions of consul
 hashi list consul
 
-# List builds of vault 1.0.1
+# List zip files of vault 1.0.1
 hashi list vault 1.0.1
 
 # Install packer 1.3.3 for your environment

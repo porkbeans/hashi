@@ -19,7 +19,7 @@ type LinkList []LinkEntry
 
 // ParseLinkList parses html to a list of links.
 func ParseLinkList(baseURL *url.URL, node *html.Node) LinkList {
-	links := LinkList{}
+	linkList := LinkList{}
 
 	for c := node.FirstChild; c != nil; c = c.NextSibling {
 		if c.Type == html.ElementNode && c.Parent.Data == "li" && c.Data == "a" {
@@ -32,19 +32,19 @@ func ParseLinkList(baseURL *url.URL, node *html.Node) LinkList {
 						continue
 					}
 
-					links = append(
-						links, LinkEntry{
+					linkList = append(
+						linkList, LinkEntry{
 							Name: text,
 							URL:  baseURL.ResolveReference(relativeURL).String(),
 						})
 				}
 			}
 		} else if c.FirstChild != nil {
-			links = append(links, ParseLinkList(baseURL, c)...)
+			linkList = append(linkList, ParseLinkList(baseURL, c)...)
 		}
 	}
 
-	return links
+	return linkList
 }
 
 // ProductVersionEntry represents a link of specific version of a HashiCorp product.
@@ -81,7 +81,7 @@ func mapSubmatchNames(pattern *regexp.Regexp, str string) (map[string]string, bo
 // ProductVersionList parses LinkList to ProductVersionList
 func (l LinkList) ProductVersionList() ProductVersionList {
 	pattern := regexp.MustCompile(`^/(?P<product>.+)/(?P<version>.+)/$`)
-	versionLinks := ProductVersionList{}
+	versionList := ProductVersionList{}
 
 	for _, link := range l {
 		versionURL, err := url.Parse(link.URL)
@@ -90,7 +90,7 @@ func (l LinkList) ProductVersionList() ProductVersionList {
 		}
 
 		if matches, matched := mapSubmatchNames(pattern, versionURL.Path); matched {
-			versionLinks = append(versionLinks, ProductVersionEntry{
+			versionList = append(versionList, ProductVersionEntry{
 				Name:    matches["product"],
 				Version: matches["version"],
 				URL:     link.URL,
@@ -98,11 +98,11 @@ func (l LinkList) ProductVersionList() ProductVersionList {
 		}
 	}
 
-	return versionLinks
+	return versionList
 }
 
-// ProductBuildEntry represents a link to a HashiCorp product's build.
-type ProductBuildEntry struct {
+// ProductZipEntry represents a link to a HashiCorp product's zip.
+type ProductZipEntry struct {
 	Name    string
 	Version string
 	Os      string
@@ -110,22 +110,22 @@ type ProductBuildEntry struct {
 	URL     string
 }
 
-// ProductBuildList represents a list of ProductBuildEntry.
-type ProductBuildList []ProductBuildEntry
+// ProductZipList represents a list of ProductZipEntry.
+type ProductZipList []ProductZipEntry
 
-// ProductBuildList parses a LinkList to a ProductBuildList.
-func (l LinkList) ProductBuildList() ProductBuildList {
+// ProductZipList parses a LinkList to a ProductZipList.
+func (l LinkList) ProductZipList() ProductZipList {
 	pattern := regexp.MustCompile(`^/(?P<product>.+)/(?P<version>.+)/.+_(?P<os>.+)_(?P<arch>.+)\.zip$`)
-	buildLinks := ProductBuildList{}
+	zipList := ProductZipList{}
 
 	for _, link := range l {
-		buildURL, err := url.Parse(link.URL)
+		zipURL, err := url.Parse(link.URL)
 		if err != nil {
 			continue
 		}
 
-		if matches, matched := mapSubmatchNames(pattern, buildURL.Path); matched {
-			buildLinks = append(buildLinks, ProductBuildEntry{
+		if matches, matched := mapSubmatchNames(pattern, zipURL.Path); matched {
+			zipList = append(zipList, ProductZipEntry{
 				Name:    matches["product"],
 				Version: matches["version"],
 				Os:      matches["os"],
@@ -135,10 +135,10 @@ func (l LinkList) ProductBuildList() ProductBuildList {
 		}
 	}
 
-	return buildLinks
+	return zipList
 }
 
-// ChecksumEntry represents a checksum for a HashiCorp product's build.
+// ChecksumEntry represents a checksum for a HashiCorp product's zip file.
 type ChecksumEntry struct {
 	Name     string
 	Version  string
