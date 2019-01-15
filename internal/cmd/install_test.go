@@ -3,11 +3,10 @@ package cmd
 import (
 	"archive/zip"
 	"bytes"
-	"context"
 	"crypto/sha256"
 	"github.com/porkbeans/hashi/internal/testutils"
 	"io/ioutil"
-	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 )
@@ -15,20 +14,15 @@ import (
 func TestDownloadToTempFile(t *testing.T) {
 	content := "Hello"
 
-	server := http.Server{
-		Addr: "localhost:8989",
-		Handler: testutils.TestServerHandler{
+	server := httptest.NewServer(
+		testutils.TestServerHandler{
 			StatusCode: 200,
 			Content:    content,
 		},
-	}
-	go func() {
-		if err := server.ListenAndServe(); err != nil {
-			t.Log(err)
-		}
-	}()
+	)
+	defer server.Close()
 
-	tempFileName, checksum, err := downloadToTempFile("http://localhost:8989/", os.Stderr)
+	tempFileName, checksum, err := downloadToTempFile(server.URL, os.Stderr)
 	if err != nil {
 		t.Error(err)
 	}
@@ -38,8 +32,6 @@ func TestDownloadToTempFile(t *testing.T) {
 	if !bytes.Equal(expected[:], checksum[:]) {
 		t.Errorf("checksum failed")
 	}
-
-	server.Shutdown(context.Background())
 }
 
 func TestDownloadToTempFileFail(t *testing.T) {

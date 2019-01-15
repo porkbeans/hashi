@@ -18,7 +18,7 @@ func getList(rawURL string) (parseutils.LinkList, error) {
 		return nil, err
 	}
 
-	resp, err := ioutils.Get(rawURL)
+	resp, err := ioutils.Get(nil, rawURL)
 	if err != nil {
 		return nil, err
 	}

@@ -5,8 +5,13 @@ import (
 	"net/http"
 )
 
-func Get(url string) (*http.Response, error) {
-	resp, err := http.Get(url)
+// Get retrieves resources from specified URL. returns error if status code is not 200.
+func Get(client *http.Client, url string) (*http.Response, error) {
+	if client == nil {
+		client = http.DefaultClient
+	}
+
+	resp, err := client.Get(url)
 	if err != nil {
 		return nil, err
 	}

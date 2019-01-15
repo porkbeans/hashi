@@ -1,52 +1,45 @@
 package ioutils
 
 import (
-	"context"
 	"github.com/porkbeans/hashi/internal/testutils"
 	"github.com/porkbeans/hashi/pkg/urlutils"
-	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
 func TestGetOK(t *testing.T) {
-	_, err := Get(urlutils.HashicorpProductList)
+	_, err := Get(nil, urlutils.HashicorpProductList)
 	if err != nil {
 		t.Errorf("error should not happen")
 	}
 }
 
 func TestGetNil(t *testing.T) {
-	_, err := Get("")
+	_, err := Get(nil, "")
 	if err == nil {
 		t.Errorf("error must happen")
 	}
 }
 
 func TestGetNotFound(t *testing.T) {
-	_, err := Get(urlutils.HashicorpProductList + "nonexistence")
+	_, err := Get(nil, urlutils.HashicorpProductList+"nonexistence")
 	if err == nil {
 		t.Errorf("error must happen")
 	}
 }
 
 func TestGetOther(t *testing.T) {
-	server := http.Server{
-		Addr: "localhost:8989",
-		Handler: testutils.TestServerHandler{
+	server := httptest.NewServer(
+		testutils.TestServerHandler{
 			StatusCode: 500,
 			Content:    "Failed",
 		},
-	}
-	go func() {
-		if err := server.ListenAndServe(); err != nil {
-			t.Log(err)
-		}
-	}()
+	)
+	defer server.Close()
 
-	_, err := Get("http://localhost:8989/")
+	client := server.Client()
+	_, err := Get(client, server.URL)
 	if err == nil {
 		t.Errorf("error must happen")
 	}
-
-	server.Shutdown(context.Background())
 }

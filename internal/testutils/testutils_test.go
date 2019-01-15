@@ -2,9 +2,9 @@ package testutils
 
 import (
 	"archive/zip"
-	"context"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"os"
 	"testing"
@@ -17,20 +17,15 @@ func TestGenerateInvalidURL(t *testing.T) {
 }
 
 func TestTestServerHandler_ServeHTTP(t *testing.T) {
-	server := http.Server{
-		Addr: "localhost:8989",
-		Handler: TestServerHandler{
+	server := httptest.NewServer(
+		TestServerHandler{
 			StatusCode: 200,
 			Content:    "Hello",
 		},
-	}
-	go func() {
-		if err := server.ListenAndServe(); err != nil {
-			t.Log(err)
-		}
-	}()
+	)
+	defer server.Close()
 
-	resp, err := http.Get("http://localhost:8989/")
+	resp, err := http.Get(server.URL)
 	if err != nil {
 		t.Fatalf("error should not happen")
 	}
@@ -48,8 +43,6 @@ func TestTestServerHandler_ServeHTTP(t *testing.T) {
 	if string(content) != "Hello" {
 		t.Fatalf("content must be 'Hello'")
 	}
-
-	server.Shutdown(context.Background())
 }
 
 func TestTouchTempFile(t *testing.T) {

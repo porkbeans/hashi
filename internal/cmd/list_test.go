@@ -2,10 +2,9 @@ package cmd
 
 import (
 	"bytes"
-	"context"
 	"github.com/porkbeans/hashi/internal/testutils"
 	"github.com/porkbeans/hashi/pkg/urlutils"
-	"net/http"
+	"net/http/httptest"
 	"regexp"
 	"strings"
 	"testing"
@@ -26,25 +25,20 @@ func TestGetListInvalidURL(t *testing.T) {
 }
 
 func TestGetListServerError(t *testing.T) {
-	server := http.Server{
-		Addr: "localhost:8989",
-		Handler: testutils.TestServerHandler{
+	server := httptest.NewServer(
+		testutils.TestServerHandler{
 			StatusCode: 500,
 			Content:    "Failed",
 		},
-	}
-	go func() {
-		if err := server.ListenAndServe(); err != nil {
-			t.Log(err)
-		}
-	}()
+	)
+	defer server.Close()
 
-	_, err := getList("http://localhost:8989/")
+	_, err := getList(server.URL)
 	if err == nil {
 		t.Errorf("error must happen")
 	}
 
-	server.Shutdown(context.Background())
+	t.Log(err)
 }
 
 func TestShowList(t *testing.T) {
