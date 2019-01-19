@@ -1,3 +1,6 @@
+# Variables
+SOURCES := $(shell find . -name '*.go' | grep -v vendor)
+
 # Phony Targets
 .PHONY: all lint build test coverage coveralls clean
 
@@ -6,7 +9,7 @@ all: build
 lint:
 	golint -set_exit_status internal/... pkg/...
 
-build: hashi
+build: bin/hashi
 
 test cover.out:
 	go test -covermode=count -coverprofile=cover.out ./internal/... ./pkg/...
@@ -25,5 +28,5 @@ clean:
 	rm -f cover.out
 
 # File Targets
-hashi:
+bin/hashi: $(SOURCES)
 	go build -o bin/hashi
