@@ -11,7 +11,7 @@ before_install:
   - go get -u github.com/mattn/goveralls
 
 install:
-  - $GOPATH/bin/dep ensure
+  - dep ensure
 
 script:
   - make build
