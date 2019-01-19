@@ -4,7 +4,7 @@
 all: build
 
 lint:
-	golint -set_exit_status cmd/... internal/... pkg/...
+	golint -set_exit_status internal/... pkg/...
 
 build: hashi
 
@@ -26,4 +26,4 @@ clean:
 
 # File Targets
 hashi:
-	go build -o bin/hashi ./cmd/hashi
+	go build -o bin/hashi

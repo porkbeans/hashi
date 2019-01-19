@@ -8,7 +8,7 @@ Hashi is a tool for downloading HashiCorp tools.
 
 # Installation
 
-`go get -u github.com/porkbeans/hashi/cmd/hashi`
+`go get -u github.com/porkbeans/hashi`
 
 # Examples
 
