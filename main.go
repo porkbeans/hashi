@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/porkbeans/hashi/internal/cmd"
 	"os"
+
+	"github.com/porkbeans/hashi/internal/cmd"
 )
 
 func main() {

@@ -2,10 +2,11 @@ package parseutils
 
 import (
 	"encoding/hex"
-	"golang.org/x/net/html"
 	"net/url"
 	"regexp"
 	"strings"
+
+	"golang.org/x/net/html"
 )
 
 // LinkEntry represents a link with label.

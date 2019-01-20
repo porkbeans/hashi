@@ -4,11 +4,12 @@ import (
 	"archive/zip"
 	"bytes"
 	"crypto/sha256"
-	"github.com/porkbeans/hashi/internal/testutils"
 	"io/ioutil"
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"github.com/porkbeans/hashi/internal/testutils"
 )
 
 func TestDownloadToTempFile(t *testing.T) {

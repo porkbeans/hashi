@@ -2,12 +2,13 @@ package parseutils
 
 import (
 	"encoding/hex"
-	"github.com/porkbeans/hashi/pkg/urlutils"
-	"golang.org/x/net/html"
 	"io/ioutil"
 	"net/url"
 	"os"
 	"testing"
+
+	"github.com/porkbeans/hashi/pkg/urlutils"
+	"golang.org/x/net/html"
 )
 
 func getNodeFromFile(path string) (*html.Node, error) {

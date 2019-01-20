@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"bytes"
-	"github.com/porkbeans/hashi/internal/testutils"
-	"github.com/porkbeans/hashi/pkg/urlutils"
 	"net/http/httptest"
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/porkbeans/hashi/internal/testutils"
+	"github.com/porkbeans/hashi/pkg/urlutils"
 )
 
 func TestGetList(t *testing.T) {

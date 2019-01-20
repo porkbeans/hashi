@@ -1,10 +1,11 @@
 package ioutils
 
 import (
-	"github.com/porkbeans/hashi/internal/testutils"
-	"github.com/porkbeans/hashi/pkg/urlutils"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/porkbeans/hashi/internal/testutils"
+	"github.com/porkbeans/hashi/pkg/urlutils"
 )
 
 func TestGetOK(t *testing.T) {

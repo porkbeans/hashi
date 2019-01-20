@@ -6,16 +6,17 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
-	"github.com/mitchellh/ioprogress"
-	"github.com/porkbeans/hashi/internal/ioutils"
-	"github.com/porkbeans/hashi/pkg/parseutils"
-	"github.com/porkbeans/hashi/pkg/urlutils"
-	"github.com/spf13/cobra"
 	"io"
 	"io/ioutil"
 	"os"
 	"runtime"
 	"time"
+
+	"github.com/mitchellh/ioprogress"
+	"github.com/porkbeans/hashi/internal/ioutils"
+	"github.com/porkbeans/hashi/pkg/parseutils"
+	"github.com/porkbeans/hashi/pkg/urlutils"
+	"github.com/spf13/cobra"
 )
 
 var (

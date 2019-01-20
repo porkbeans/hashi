@@ -1,9 +1,10 @@
 package urlutils
 
 import (
-	"github.com/porkbeans/hashi/pkg/parseutils"
 	"net/url"
 	"testing"
+
+	"github.com/porkbeans/hashi/pkg/parseutils"
 )
 
 func TestUrl(t *testing.T) {

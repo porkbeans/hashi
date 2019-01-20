@@ -2,14 +2,15 @@ package cmd
 
 import (
 	"fmt"
+	"io"
+	"net/url"
+	"runtime"
+
 	"github.com/porkbeans/hashi/internal/ioutils"
 	"github.com/porkbeans/hashi/pkg/parseutils"
 	"github.com/porkbeans/hashi/pkg/urlutils"
 	"github.com/spf13/cobra"
 	"golang.org/x/net/html"
-	"io"
-	"net/url"
-	"runtime"
 )
 
 func getList(rawURL string) (parseutils.LinkList, error) {
