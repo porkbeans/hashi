@@ -5,23 +5,19 @@ import (
 	"crypto/rand"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 )
-
-func generateRandomBytes() string {
-	buf := [32]byte{}
-	rand.Read(buf[:])
-	return string(buf[:])
-}
 
 // GenerateInvalidURL provides random invalid URL
 func GenerateInvalidURL() string {
 	var rawURL string
-	var err error
 
-	for err == nil {
-		rawURL = generateRandomBytes()
-		_, err = url.Parse(rawURL)
+	h := "ghijklmnopqrstuvwxyz"
+	rands := [8]byte{}
+	rand.Read(rands[:])
+	for i := 0; i < 4; i++ {
+		h1 := string(h[int(rands[i*2])%len(h)])
+		h2 := string(h[int(rands[i*2+1])%len(h)])
+		rawURL += "%" + h1 + h2
 	}
 
 	return rawURL
