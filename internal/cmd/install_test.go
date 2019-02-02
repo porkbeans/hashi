@@ -25,7 +25,7 @@ func TestDownloadToTempFile(t *testing.T) {
 
 	tempFileName, checksum, err := downloadToTempFile(server.URL, os.Stderr)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	defer os.Remove(tempFileName)
 
@@ -63,19 +63,19 @@ func TestGetChecksum(t *testing.T) {
 func TestOpenFileInZip(t *testing.T) {
 	tempFileName, err := testutils.CreateTempZip("testexe", "hello")
 	if err != nil {
-		t.Errorf("error should not happen")
+		t.Fatalf("error should not happen")
 	}
 	defer os.Remove(tempFileName)
 
 	zipReader, err := zip.OpenReader(tempFileName)
 	if err != nil {
-		t.Errorf("error should not happen")
+		t.Fatalf("error should not happen")
 	}
 	defer zipReader.Close()
 
 	fileReader, _, err := openFileInZip(zipReader, "testexe")
 	if err != nil {
-		t.Errorf("error should not happen")
+		t.Fatalf("error should not happen")
 	}
 	defer fileReader.Close()
 
@@ -92,13 +92,13 @@ func TestOpenFileInZip(t *testing.T) {
 func TestOpenFileInZipNotFound(t *testing.T) {
 	tempFileName, err := testutils.CreateTempZip("testexe", "hello")
 	if err != nil {
-		t.Errorf("error should not happen")
+		t.Fatalf("error should not happen")
 	}
 	defer os.Remove(tempFileName)
 
 	zipReader, err := zip.OpenReader(tempFileName)
 	if err != nil {
-		t.Errorf("error should not happen")
+		t.Fatalf("error should not happen")
 	}
 	defer zipReader.Close()
 
@@ -112,13 +112,13 @@ func TestOpenFileInZipNotFound(t *testing.T) {
 func TestExtractBinaryInZip(t *testing.T) {
 	tempZipName, err := testutils.CreateTempZip("testexe", "hello")
 	if err != nil {
-		t.Errorf("error should not happen")
+		t.Fatalf("error should not happen")
 	}
 	defer os.Remove(tempZipName)
 
 	tempBinName, err := testutils.TouchTempFile()
 	if err != nil {
-		t.Errorf("error should not happen")
+		t.Fatalf("error should not happen")
 	}
 	defer os.Remove(tempBinName)
 
@@ -131,13 +131,13 @@ func TestExtractBinaryInZip(t *testing.T) {
 func TestExtractBinaryInZipNotFound1(t *testing.T) {
 	tempZipName, err := testutils.TouchTempFile()
 	if err != nil {
-		t.Errorf("error should not happen")
+		t.Fatalf("error should not happen")
 	}
 	os.Remove(tempZipName)
 
 	tempBinName, err := testutils.TouchTempFile()
 	if err != nil {
-		t.Errorf("error should not happen")
+		t.Fatalf("error should not happen")
 	}
 	defer os.Remove(tempBinName)
 
@@ -150,13 +150,13 @@ func TestExtractBinaryInZipNotFound1(t *testing.T) {
 func TestExtractBinaryInZipNotFound2(t *testing.T) {
 	tempZipName, err := testutils.CreateTempZip("testexe", "hello")
 	if err != nil {
-		t.Errorf("error should not happen")
+		t.Fatalf("error should not happen")
 	}
 	defer os.Remove(tempZipName)
 
 	tempBinName, err := testutils.TouchTempFile()
 	if err != nil {
-		t.Errorf("error should not happen")
+		t.Fatalf("error should not happen")
 	}
 	defer os.Remove(tempBinName)
 
@@ -169,7 +169,7 @@ func TestExtractBinaryInZipNotFound2(t *testing.T) {
 func TestInstallCmd(t *testing.T) {
 	tempBinName, err := testutils.TouchTempFile()
 	if err != nil {
-		t.Errorf("error should not happen")
+		t.Fatalf("error should not happen")
 	}
 	defer os.Remove(tempBinName)
 
@@ -182,7 +182,7 @@ func TestInstallCmd(t *testing.T) {
 func TestInstallCmdNotFound(t *testing.T) {
 	tempBinName, err := testutils.TouchTempFile()
 	if err != nil {
-		t.Errorf("error should not happen")
+		t.Fatalf("error should not happen")
 	}
 	defer os.Remove(tempBinName)
 

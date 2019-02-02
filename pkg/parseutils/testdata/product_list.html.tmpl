@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>List for parseutils tests</title>
+</head>
+
+<body>
+<ul>
+    {{range $v := .}}
+        <li>
+            <a href="{{$v.URL}}">{{$v.Name}}</a>
+        </li>
+    {{end}}
+</ul>
+</body>
+</html>

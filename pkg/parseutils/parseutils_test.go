@@ -1,31 +1,19 @@
 package parseutils
 
 import (
+	"bytes"
 	"encoding/hex"
 	"io/ioutil"
 	"net/url"
-	"os"
 	"testing"
+	"text/template"
 
+	"github.com/porkbeans/hashi/internal/testutils"
 	"github.com/porkbeans/hashi/pkg/urlutils"
 	"golang.org/x/net/html"
 )
 
-func getNodeFromFile(path string) (*html.Node, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-
-	return html.Parse(file)
-}
-
-func TestParseLinkList(t *testing.T) {
-	node, err := getNodeFromFile("testdata/product_list.html")
-	if err != nil {
-		t.Error(err)
-	}
-
+func TestParseLinkList1(t *testing.T) {
 	expectedList := LinkList{
 		{Name: "consul", URL: urlutils.HashicorpProductList + "consul/"},
 		{Name: "nomad", URL: urlutils.HashicorpProductList + "nomad/"},
@@ -35,11 +23,25 @@ func TestParseLinkList(t *testing.T) {
 		{Name: "vault", URL: urlutils.HashicorpProductList + "vault/"},
 	}
 
+	tmpl := template.Must(template.ParseFiles("testdata/product_list.html.tmpl"))
+	buf := &bytes.Buffer{}
+	if err := tmpl.ExecuteTemplate(buf, "product_list.html.tmpl", expectedList); err != nil {
+		t.Error(err)
+		return
+	}
+
+	node, err := html.Parse(buf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
 	baseURL, _ := url.Parse(urlutils.HashicorpProductList)
 	actualList := ParseLinkList(baseURL, node)
 
 	if len(expectedList) != len(actualList) {
 		t.Errorf("failed to parse list")
+		return
 	}
 
 	for i := 0; i < len(expectedList); i++ {
@@ -50,24 +52,54 @@ func TestParseLinkList(t *testing.T) {
 	}
 }
 
-func TestLinkList_ProductVersionList(t *testing.T) {
-	node, err := getNodeFromFile("testdata/product_version_list.html")
-	if err != nil {
-		t.Error(err)
+func TestParseLinkList2(t *testing.T) {
+	linkList := LinkList{
+		{Name: "consul", URL: testutils.GenerateInvalidURL()},
+		{Name: "nomad", URL: testutils.GenerateInvalidURL()},
+		{Name: "packer", URL: testutils.GenerateInvalidURL()},
+		{Name: "terraform", URL: testutils.GenerateInvalidURL()},
+		{Name: "vagrant", URL: testutils.GenerateInvalidURL()},
+		{Name: "vault", URL: testutils.GenerateInvalidURL()},
 	}
 
+	tmpl := template.Must(template.ParseFiles("testdata/product_list.html.tmpl"))
+	buf := &bytes.Buffer{}
+
+	if err := tmpl.ExecuteTemplate(buf, "product_list.html.tmpl", linkList); err != nil {
+		t.Error(err)
+		return
+	}
+
+	node, err := html.Parse(buf)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	baseURL, _ := url.Parse(urlutils.HashicorpProductList)
+	actualList := ParseLinkList(baseURL, node)
+
+	if len(actualList) != 0 {
+		t.Errorf("failed to parse list")
+	}
+}
+
+func TestLinkList_ProductVersionList1(t *testing.T) {
+	linkList := LinkList{
+		{Name: "consul_1.4.0", URL: urlutils.HashicorpProductList + "consul/1.4.0/"},
+		{Name: "consul_1.4.0-rc1", URL: urlutils.HashicorpProductList + "consul/1.4.0-rc1/"},
+		{Name: "consul_1.3.1", URL: urlutils.HashicorpProductList + "consul/1.3.1/"},
+	}
+	actualList := linkList.ProductVersionList()
 	expectedList := ProductVersionList{
 		{Name: "consul", Version: "1.4.0", URL: urlutils.HashicorpProductList + "consul/1.4.0/"},
 		{Name: "consul", Version: "1.4.0-rc1", URL: urlutils.HashicorpProductList + "consul/1.4.0-rc1/"},
 		{Name: "consul", Version: "1.3.1", URL: urlutils.HashicorpProductList + "consul/1.3.1/"},
 	}
 
-	baseURL, _ := url.Parse(urlutils.HashicorpProductList)
-	linkList := ParseLinkList(baseURL, node)
-	actualList := linkList.ProductVersionList()
-
 	if len(expectedList) != len(actualList) {
 		t.Errorf("failed to parse list")
+		return
 	}
 
 	for i := 0; i < len(expectedList); i++ {
@@ -78,14 +110,27 @@ func TestLinkList_ProductVersionList(t *testing.T) {
 	}
 }
 
-func TestLinkList_ProductZipList(t *testing.T) {
-	node, err := getNodeFromFile("testdata/product_zip_list.html")
-	if err != nil {
-		t.Error(err)
+func TestLinkList_ProductVersionList2(t *testing.T) {
+	linkList := LinkList{
+		{Name: "consul_1.4.0", URL: testutils.GenerateInvalidURL()},
+		{Name: "consul_1.4.0-rc1", URL: testutils.GenerateInvalidURL()},
+		{Name: "consul_1.3.1", URL: testutils.GenerateInvalidURL()},
 	}
+	actualList := linkList.ProductVersionList()
 
-	baseURL, _ := url.Parse(urlutils.HashicorpProductList)
+	if len(actualList) != 0 {
+		t.Errorf("failed to parse list")
+	}
+}
 
+func TestLinkList_ProductZipList(t *testing.T) {
+	linkList := LinkList{
+		{Name: "consul_1.4.0_darwin_386.zip", URL: urlutils.HashicorpProductList + "consul/1.4.0/consul_1.4.0_darwin_386.zip"},
+		{Name: "consul_1.4.0_darwin_amd64.zip", URL: urlutils.HashicorpProductList + "consul/1.4.0/consul_1.4.0_darwin_amd64.zip"},
+		{Name: "consul_1.4.0_freebsd_386.zip", URL: urlutils.HashicorpProductList + "consul/1.4.0/consul_1.4.0_freebsd_386.zip"},
+		{Name: "consul_1.4.0_freebsd_amd64.zip", URL: urlutils.HashicorpProductList + "consul/1.4.0/consul_1.4.0_freebsd_amd64.zip"},
+	}
+	actualList := linkList.ProductZipList()
 	expectedList := ProductZipList{
 		{Name: "consul", Version: "1.4.0", Os: "darwin", Arch: "386", URL: urlutils.HashicorpProductList + "consul/1.4.0/consul_1.4.0_darwin_386.zip"},
 		{Name: "consul", Version: "1.4.0", Os: "darwin", Arch: "amd64", URL: urlutils.HashicorpProductList + "consul/1.4.0/consul_1.4.0_darwin_amd64.zip"},
@@ -93,11 +138,9 @@ func TestLinkList_ProductZipList(t *testing.T) {
 		{Name: "consul", Version: "1.4.0", Os: "freebsd", Arch: "amd64", URL: urlutils.HashicorpProductList + "consul/1.4.0/consul_1.4.0_freebsd_amd64.zip"},
 	}
 
-	linkList := ParseLinkList(baseURL, node)
-	actualList := linkList.ProductZipList()
-
 	if len(expectedList) != len(actualList) {
 		t.Errorf("failed to parse list")
+		return
 	}
 
 	for i := 0; i < len(expectedList); i++ {
@@ -105,6 +148,20 @@ func TestLinkList_ProductZipList(t *testing.T) {
 			t.Errorf("%+v is not equal to %+v", expectedList[i], actualList[i])
 		}
 		t.Logf("%s %s %s %s -> %s\n", actualList[i].Name, actualList[i].Version, actualList[i].Os, actualList[i].Arch, actualList[i].URL)
+	}
+}
+
+func TestLinkList_ProductZipList2(t *testing.T) {
+	linkList := LinkList{
+		{Name: "consul_1.4.0_darwin_386.zip", URL: testutils.GenerateInvalidURL()},
+		{Name: "consul_1.4.0_darwin_amd64.zip", URL: testutils.GenerateInvalidURL()},
+		{Name: "consul_1.4.0_freebsd_386.zip", URL: testutils.GenerateInvalidURL()},
+		{Name: "consul_1.4.0_freebsd_amd64.zip", URL: testutils.GenerateInvalidURL()},
+	}
+	actualList := linkList.ProductZipList()
+
+	if len(actualList) != 0 {
+		t.Errorf("failed to parse list")
 	}
 }
 
@@ -119,6 +176,7 @@ func TestParseChecksumList(t *testing.T) {
 	content, err := ioutil.ReadFile("testdata/checksums")
 	if err != nil {
 		t.Error(err)
+		return
 	}
 
 	expectedList := ChecksumList{
