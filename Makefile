@@ -9,7 +9,7 @@ all: build
 lint:
 	golint -set_exit_status internal/... pkg/...
 
-build: bin/hashi
+build: hashi
 
 test cover.out:
 	go test -covermode=count -coverprofile=cover.out ./internal/... ./pkg/...
@@ -24,9 +24,9 @@ coveralls: cover.out
 	goveralls -coverprofile=cover.out -service=travis-ci
 
 clean:
-	rm -f bin/hashi
+	rm -f hashi
 	rm -f cover.out
 
 # File Targets
-bin/hashi: $(SOURCES)
-	go build -o bin/hashi
+hashi: $(SOURCES)
+	go build
