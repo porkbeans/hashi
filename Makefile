@@ -11,7 +11,7 @@ lint:
 
 build: hashi
 
-test cover.out:
+test cover.out: $(SOURCES)
 	go test -covermode=count -coverprofile=cover.out ./internal/... ./pkg/...
 
 coverage: cover.out
