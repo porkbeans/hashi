@@ -12,8 +12,9 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/porkbeans/hashi/internal/httputils"
+
 	"github.com/mitchellh/ioprogress"
-	"github.com/porkbeans/hashi/internal/ioutils"
 	"github.com/porkbeans/hashi/pkg/parseutils"
 	"github.com/porkbeans/hashi/pkg/urlutils"
 	"github.com/spf13/cobra"
@@ -38,7 +39,7 @@ func progressReader(reader io.Reader, size int64, printer io.Writer, prefix stri
 func downloadToTempFile(url string, printer io.Writer) (string, [32]byte, error) {
 	checksum := [32]byte{}
 
-	resp, err := ioutils.Get(nil, url)
+	resp, err := httputils.Get(nil, url)
 	if err != nil {
 		return "", checksum, err
 	}
@@ -67,7 +68,7 @@ func downloadToTempFile(url string, printer io.Writer) (string, [32]byte, error)
 func getChecksum(product, version, goos, goarch string) ([32]byte, error) {
 	url := urlutils.ProductZipChecksumURL(product, version)
 
-	resp, err := ioutils.Get(nil, url)
+	resp, err := httputils.Get(nil, url)
 	if err != nil {
 		return [32]byte{}, err
 	}

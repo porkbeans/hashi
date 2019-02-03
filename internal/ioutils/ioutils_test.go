@@ -1,46 +1,55 @@
 package ioutils
 
 import (
-	"net/http/httptest"
+	"bytes"
+	"errors"
+	"io/ioutil"
 	"testing"
-
-	"github.com/porkbeans/hashi/internal/testutils"
-	"github.com/porkbeans/hashi/pkg/urlutils"
 )
 
-func TestGetOK(t *testing.T) {
-	_, err := Get(nil, urlutils.HashicorpProductList)
+func TestErrWriter1(t *testing.T) {
+	file, err := ioutil.TempFile("", "")
 	if err != nil {
-		t.Errorf("error should not happen")
+		t.Fatalf("failed to create a filename")
+	}
+	defer Remove(file.Name())
+	defer Close(file)
+
+	w := NewErrorWriter(file, err)
+	_, err = w.Write([]byte("content"))
+	if err != nil {
+		t.Error(err)
 	}
 }
 
-func TestGetNil(t *testing.T) {
-	_, err := Get(nil, "")
-	if err == nil {
-		t.Errorf("error must happen")
+func TestErrWriter2(t *testing.T) {
+	buf := bytes.NewBuffer(make([]byte, 0))
+	dummyError := errors.New("dummy error")
+	w := NewErrorWriter(buf, dummyError)
+
+	_, err := w.Write([]byte("content"))
+	if err.Error() != dummyError.Error() {
+		t.Errorf("expected dummy error but got '%s'", err.Error())
+	}
+
+	if w.Err().Error() != dummyError.Error() {
+		t.Errorf("expected dummy error but got '%s'", err.Error())
 	}
 }
 
-func TestGetNotFound(t *testing.T) {
-	_, err := Get(nil, urlutils.HashicorpProductList+"nonexistence")
-	if err == nil {
-		t.Errorf("error must happen")
-	}
+type FailWriter struct {
+	Err error
 }
 
-func TestGetOther(t *testing.T) {
-	server := httptest.NewServer(
-		testutils.TestServerHandler{
-			StatusCode: 500,
-			Content:    "Failed",
-		},
-	)
-	defer server.Close()
+func (w FailWriter) Write(p []byte) (n int, err error) {
+	return 0, w.Err
+}
 
-	client := server.Client()
-	_, err := Get(client, server.URL)
-	if err == nil {
-		t.Errorf("error must happen")
+func TestErrWriter3(t *testing.T) {
+	dummyError := errors.New("dummy error")
+	w := NewErrorWriter(FailWriter{Err: dummyError}, nil)
+	_, err := w.Write([]byte("content"))
+	if err.Error() != dummyError.Error() {
+		t.Errorf("expected dummy error but got '%s'", err.Error())
 	}
 }

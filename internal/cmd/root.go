@@ -19,7 +19,7 @@ func Execute(args []string) int {
 
 	rootCmd.SetArgs(args)
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintf(rootCmd.OutOrStderr(), "Error: %s\n", err)
+		fmt.Fprintf(rootCmd.OutOrStderr(), "Err: %s\n", err)
 		return 1
 	}
 

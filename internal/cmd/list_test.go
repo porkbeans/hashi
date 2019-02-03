@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"errors"
 	"net/http/httptest"
 	"regexp"
 	"strings"
@@ -11,15 +12,46 @@ import (
 	"github.com/porkbeans/hashi/pkg/urlutils"
 )
 
+func TestParseURL1(t *testing.T) {
+	expectedURL := urlutils.HashicorpProductList
+	actualURL := parseURL([]string{})
+	if actualURL != expectedURL {
+		t.Errorf("expected %s, but got %s", expectedURL, actualURL)
+	}
+}
+
+func TestParseURL2(t *testing.T) {
+	expectedURL := urlutils.HashicorpProductList + "unknown/"
+	actualURL := parseURL([]string{"unknown"})
+	if actualURL != expectedURL {
+		t.Errorf("expected %s, but got %s", expectedURL, actualURL)
+	}
+}
+
+func TestParseURL3(t *testing.T) {
+	expectedURL := urlutils.HashicorpProductList + "unknown/1.0.0/"
+	actualURL := parseURL([]string{"unknown", "1.0.0"})
+	if actualURL != expectedURL {
+		t.Errorf("expected %s, but got %s", expectedURL, actualURL)
+	}
+}
+
+func TestParseURL4(t *testing.T) {
+	actualURL := parseURL([]string{"unknown", "1.0.0", "invalid"})
+	if len(actualURL) > 0 {
+		t.Errorf("expected \"\", but got %s", actualURL)
+	}
+}
+
 func TestGetList(t *testing.T) {
-	_, err := getList(urlutils.HashicorpProductList)
+	_, err := getList(nil, urlutils.HashicorpProductList)
 	if err != nil {
 		t.Errorf("error should not happen")
 	}
 }
 
 func TestGetListInvalidURL(t *testing.T) {
-	_, err := getList(testutils.GenerateInvalidURL())
+	_, err := getList(nil, testutils.GenerateInvalidURL())
 	if err == nil {
 		t.Errorf("error must happen")
 	}
@@ -34,12 +66,21 @@ func TestGetListServerError(t *testing.T) {
 	)
 	defer server.Close()
 
-	_, err := getList(server.URL)
+	_, err := getList(nil, server.URL)
 	if err == nil {
 		t.Errorf("error must happen")
 	}
 
 	t.Log(err)
+}
+
+func TestGetListParseError(t *testing.T) {
+	dummyError := errors.New("dummy error")
+	c := &testutils.FailBodyHTTPClient{Err: dummyError}
+	_, err := getList(c, "")
+	if err != dummyError {
+		t.Errorf("expected %s but got %s", dummyError, err)
+	}
 }
 
 func TestShowList(t *testing.T) {

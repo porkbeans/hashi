@@ -2,12 +2,17 @@ package testutils
 
 import (
 	"archive/zip"
+	"errors"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"strings"
 	"testing"
+
+	"github.com/porkbeans/hashi/internal/ioutils"
 )
 
 func TestGenerateInvalidURL(t *testing.T) {
@@ -42,6 +47,21 @@ func TestTestServerHandler_ServeHTTP(t *testing.T) {
 
 	if string(content) != "Hello" {
 		t.Fatalf("content must be 'Hello'")
+	}
+}
+
+func TestFailBodyHttpClient_Get(t *testing.T) {
+	dummyError := errors.New("dummy error")
+	c := FailBodyHTTPClient{Err: dummyError}
+	r, err := c.Get("")
+	if err != nil {
+		t.Fatalf("failed to get dummy response")
+	}
+	defer ioutils.Close(r.Body)
+
+	n, err := r.Body.Read([]byte{})
+	if n != 0 || err != dummyError {
+		t.Errorf("expected %s but got %s", dummyError, err)
 	}
 }
 
@@ -92,5 +112,13 @@ func TestCreateTempZip(t *testing.T) {
 
 	if string(content) != "Hello" {
 		t.Fatalf("content must be 'Hello'")
+	}
+}
+
+func TestCreateTempZip2(t *testing.T) {
+	filename, err := CreateTempZip(strings.Repeat("a", math.MaxUint16+1), "test")
+	if err == nil {
+		defer os.Remove(filename)
+		t.Error(err)
 	}
 }
