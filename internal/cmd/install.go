@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/porkbeans/hashi/internal/httputils"
+	"github.com/porkbeans/hashi/internal/ioutils"
 
 	"github.com/mitchellh/ioprogress"
 	"github.com/porkbeans/hashi/pkg/parseutils"
@@ -43,20 +44,20 @@ func downloadToTempFile(url string, printer io.Writer) (string, [32]byte, error)
 	if err != nil {
 		return "", checksum, err
 	}
-	defer resp.Body.Close()
+	defer ioutils.Close(resp.Body)
 
 	tempFile, err := ioutil.TempFile("", "hashi-")
 	if err != nil {
 		return "", checksum, err
 	}
-	defer tempFile.Close()
+	defer ioutils.Close(tempFile)
 
 	hash := sha256.New()
 	tee := io.TeeReader(resp.Body, hash)
 
 	_, err = io.Copy(tempFile, progressReader(tee, resp.ContentLength, printer, "Downloading..."))
 	if err != nil {
-		defer os.Remove(tempFile.Name())
+		defer ioutils.Remove(tempFile.Name())
 		return "", checksum, err
 	}
 
@@ -72,7 +73,7 @@ func getChecksum(product, version, goos, goarch string) ([32]byte, error) {
 	if err != nil {
 		return [32]byte{}, err
 	}
-	defer resp.Body.Close()
+	defer ioutils.Close(resp.Body)
 
 	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -105,13 +106,13 @@ func extractBinaryInZip(dst string, src string, filenameInZip string, printer io
 	if err != nil {
 		return err
 	}
-	defer zipReader.Close()
+	defer ioutils.Close(zipReader)
 
 	rawReader, file, err := openFileInZip(zipReader, filenameInZip)
 	if err != nil {
 		return err
 	}
-	defer rawReader.Close()
+	defer ioutils.Close(rawReader)
 
 	fileReader := progressReader(rawReader, int64(file.UncompressedSize64), printer, "Extracting...")
 
@@ -119,7 +120,7 @@ func extractBinaryInZip(dst string, src string, filenameInZip string, printer io
 	if err != nil {
 		return err
 	}
-	defer fileWriter.Close()
+	defer ioutils.Close(fileWriter)
 
 	_, err = io.Copy(fileWriter, fileReader)
 	return err
@@ -143,7 +144,7 @@ var installCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		defer os.Remove(tempFileName)
+		defer ioutils.Remove(tempFileName)
 
 		expectedChecksum, err := getChecksum(product, version, goos, goarch)
 		if err != nil {

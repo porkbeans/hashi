@@ -1,55 +1,24 @@
 package ioutils
 
 import (
-	"bytes"
-	"errors"
 	"io/ioutil"
+	"os"
 	"testing"
 )
 
-func TestErrWriter1(t *testing.T) {
+func TestRemoveClose(t *testing.T) {
 	file, err := ioutil.TempFile("", "")
 	if err != nil {
-		t.Fatalf("failed to create a filename")
+		t.Fatal(err)
 	}
-	defer Remove(file.Name())
-	defer Close(file)
+	Close(file)
+	Remove(file.Name())
 
-	w := NewErrorWriter(file, err)
-	_, err = w.Write([]byte("content"))
-	if err != nil {
-		t.Error(err)
-	}
-}
-
-func TestErrWriter2(t *testing.T) {
-	buf := bytes.NewBuffer(make([]byte, 0))
-	dummyError := errors.New("dummy error")
-	w := NewErrorWriter(buf, dummyError)
-
-	_, err := w.Write([]byte("content"))
-	if err.Error() != dummyError.Error() {
-		t.Errorf("expected dummy error but got '%s'", err.Error())
+	if err = file.Close(); err == nil {
+		t.Errorf("file should be already closed")
 	}
 
-	if w.Err().Error() != dummyError.Error() {
-		t.Errorf("expected dummy error but got '%s'", err.Error())
-	}
-}
-
-type FailWriter struct {
-	Err error
-}
-
-func (w FailWriter) Write(p []byte) (n int, err error) {
-	return 0, w.Err
-}
-
-func TestErrWriter3(t *testing.T) {
-	dummyError := errors.New("dummy error")
-	w := NewErrorWriter(FailWriter{Err: dummyError}, nil)
-	_, err := w.Write([]byte("content"))
-	if err.Error() != dummyError.Error() {
-		t.Errorf("expected dummy error but got '%s'", err.Error())
+	if _, err = os.Stat(file.Name()); os.IsExist(err) {
+		t.Errorf("file should be removed")
 	}
 }

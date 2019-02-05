@@ -9,6 +9,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/porkbeans/hashi/internal/ioutils"
 	"github.com/porkbeans/hashi/internal/testutils"
 )
 
@@ -27,7 +28,7 @@ func TestDownloadToTempFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Remove(tempFileName)
+	defer ioutils.Remove(tempFileName)
 
 	expected := sha256.Sum256([]byte(content))
 	if !bytes.Equal(expected[:], checksum[:]) {
@@ -38,7 +39,7 @@ func TestDownloadToTempFile(t *testing.T) {
 func TestDownloadToTempFileFail(t *testing.T) {
 	tempFileName, _, err := downloadToTempFile(testutils.GenerateInvalidURL(), os.Stderr)
 	if err == nil {
-		defer os.Remove(tempFileName)
+		defer ioutils.Remove(tempFileName)
 		t.Error("error must happen")
 	}
 }
@@ -65,19 +66,19 @@ func TestOpenFileInZip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error should not happen")
 	}
-	defer os.Remove(tempFileName)
+	defer ioutils.Remove(tempFileName)
 
 	zipReader, err := zip.OpenReader(tempFileName)
 	if err != nil {
 		t.Fatalf("error should not happen")
 	}
-	defer zipReader.Close()
+	defer ioutils.Close(zipReader)
 
 	fileReader, _, err := openFileInZip(zipReader, "testexe")
 	if err != nil {
 		t.Fatalf("error should not happen")
 	}
-	defer fileReader.Close()
+	defer ioutils.Close(fileReader)
 
 	content, err := ioutil.ReadAll(fileReader)
 	if err != nil {
@@ -94,17 +95,17 @@ func TestOpenFileInZipNotFound(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error should not happen")
 	}
-	defer os.Remove(tempFileName)
+	defer ioutils.Remove(tempFileName)
 
 	zipReader, err := zip.OpenReader(tempFileName)
 	if err != nil {
 		t.Fatalf("error should not happen")
 	}
-	defer zipReader.Close()
+	defer ioutils.Close(zipReader)
 
 	fileReader, _, err := openFileInZip(zipReader, "unknown")
 	if err == nil {
-		defer fileReader.Close()
+		defer ioutils.Close(fileReader)
 		t.Errorf("error should not happen")
 	}
 }
@@ -114,13 +115,13 @@ func TestExtractBinaryInZip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error should not happen")
 	}
-	defer os.Remove(tempZipName)
+	defer ioutils.Remove(tempZipName)
 
 	tempBinName, err := testutils.TouchTempFile()
 	if err != nil {
 		t.Fatalf("error should not happen")
 	}
-	defer os.Remove(tempBinName)
+	defer ioutils.Remove(tempBinName)
 
 	err = extractBinaryInZip(tempBinName, tempZipName, "testexe", os.Stderr)
 	if err != nil {
@@ -133,13 +134,13 @@ func TestExtractBinaryInZipNotFound1(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error should not happen")
 	}
-	os.Remove(tempZipName)
+	ioutils.Remove(tempZipName)
 
 	tempBinName, err := testutils.TouchTempFile()
 	if err != nil {
 		t.Fatalf("error should not happen")
 	}
-	defer os.Remove(tempBinName)
+	defer ioutils.Remove(tempBinName)
 
 	err = extractBinaryInZip(tempBinName, tempZipName, "testexe", os.Stderr)
 	if err == nil {
@@ -152,13 +153,13 @@ func TestExtractBinaryInZipNotFound2(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error should not happen")
 	}
-	defer os.Remove(tempZipName)
+	defer ioutils.Remove(tempZipName)
 
 	tempBinName, err := testutils.TouchTempFile()
 	if err != nil {
 		t.Fatalf("error should not happen")
 	}
-	defer os.Remove(tempBinName)
+	defer ioutils.Remove(tempBinName)
 
 	err = extractBinaryInZip(tempBinName, tempZipName, "unknown", os.Stderr)
 	if err == nil {
@@ -171,7 +172,7 @@ func TestInstallCmd(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error should not happen")
 	}
-	defer os.Remove(tempBinName)
+	defer ioutils.Remove(tempBinName)
 
 	err = installCmd.RunE(installCmd, []string{"consul", "1.4.0", tempBinName})
 	if err != nil {
@@ -184,7 +185,7 @@ func TestInstallCmdNotFound(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error should not happen")
 	}
-	defer os.Remove(tempBinName)
+	defer ioutils.Remove(tempBinName)
 
 	err = installCmd.RunE(installCmd, []string{"unknown", "1.4.0", tempBinName})
 	if err == nil {

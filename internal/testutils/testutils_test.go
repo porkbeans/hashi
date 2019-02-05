@@ -2,6 +2,7 @@ package testutils
 
 import (
 	"archive/zip"
+	"bytes"
 	"errors"
 	"io/ioutil"
 	"math"
@@ -34,7 +35,7 @@ func TestTestServerHandler_ServeHTTP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error should not happen")
 	}
-	defer resp.Body.Close()
+	defer ioutils.Close(resp.Body)
 
 	if resp.StatusCode != 200 {
 		t.Fatalf("status code must be 200")
@@ -65,12 +66,51 @@ func TestFailBodyHttpClient_Get(t *testing.T) {
 	}
 }
 
+func TestErrWriter1(t *testing.T) {
+	file, err := ioutil.TempFile("", "")
+	if err != nil {
+		t.Fatalf("failed to create a filename")
+	}
+	defer ioutils.Remove(file.Name())
+	defer ioutils.Close(file)
+
+	w := NewErrorWriter(file, err)
+	_, err = w.Write([]byte("content"))
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestErrWriter2(t *testing.T) {
+	buf := bytes.NewBuffer(make([]byte, 0))
+	dummyError := errors.New("dummy error")
+	w := NewErrorWriter(buf, dummyError)
+
+	_, err := w.Write([]byte("content"))
+	if err.Error() != dummyError.Error() {
+		t.Errorf("expected dummy error but got '%s'", err.Error())
+	}
+
+	if w.Err().Error() != dummyError.Error() {
+		t.Errorf("expected dummy error but got '%s'", err.Error())
+	}
+}
+
+func TestErrWriter3(t *testing.T) {
+	dummyError := errors.New("dummy error")
+	w := NewErrorWriter(failWriter{Err: dummyError}, nil)
+	_, err := w.Write([]byte("content"))
+	if err.Error() != dummyError.Error() {
+		t.Errorf("expected dummy error but got '%s'", err.Error())
+	}
+}
+
 func TestTouchTempFile(t *testing.T) {
 	filename, err := TouchTempFile()
 	if err != nil {
 		t.Fatalf("error should not happen")
 	}
-	defer os.Remove(filename)
+	defer ioutils.Remove(filename)
 
 	_, err = os.Stat(filename)
 	if err != nil {
@@ -83,13 +123,13 @@ func TestCreateTempZip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error should not happen")
 	}
-	defer os.Remove(filename)
+	defer ioutils.Remove(filename)
 
 	zipReader, err := zip.OpenReader(filename)
 	if err != nil {
 		t.Fatalf("error should not happen")
 	}
-	defer zipReader.Close()
+	defer ioutils.Close(zipReader)
 
 	if len(zipReader.File) != 1 {
 		t.Fatalf("zip must contain only 1 file")
@@ -103,7 +143,7 @@ func TestCreateTempZip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error should not happen")
 	}
-	defer reader.Close()
+	defer ioutils.Close(reader)
 
 	content, err := ioutil.ReadAll(reader)
 	if err != nil {
@@ -118,7 +158,7 @@ func TestCreateTempZip(t *testing.T) {
 func TestCreateTempZip2(t *testing.T) {
 	filename, err := CreateTempZip(strings.Repeat("a", math.MaxUint16+1), "test")
 	if err == nil {
-		defer os.Remove(filename)
+		defer ioutils.Remove(filename)
 		t.Error(err)
 	}
 }

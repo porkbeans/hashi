@@ -3,6 +3,7 @@ package testutils
 import (
 	"archive/zip"
 	"crypto/rand"
+	"io"
 	"io/ioutil"
 	"net/http"
 
@@ -50,6 +51,14 @@ func (w failReadCloser) Close() (err error) {
 	return nil
 }
 
+type failWriter struct {
+	Err error
+}
+
+func (w failWriter) Write(p []byte) (n int, err error) {
+	return 0, w.Err
+}
+
 // FailBodyHTTPClient helps simulating failure on reading response body.
 type FailBodyHTTPClient struct {
 	Err error
@@ -64,6 +73,37 @@ func (c *FailBodyHTTPClient) Get(url string) (resp *http.Response, err error) {
 	return
 }
 
+// ErrorWriter helps error handling while writing.
+type ErrorWriter struct {
+	writer io.Writer
+	err    error
+}
+
+// NewErrorWriter creates a ErrorWriter instance.
+func NewErrorWriter(w io.Writer, err error) ErrorWriter {
+	return ErrorWriter{
+		writer: w,
+		err:    err,
+	}
+}
+
+// Err returns error if any error occurred in Write method.
+func (w ErrorWriter) Err() error {
+	return w.err
+}
+
+// Write writes only if no error occurred.
+func (w ErrorWriter) Write(p []byte) (n int, err error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+
+	if n, err = w.writer.Write(p); err != nil {
+		w.err = err
+	}
+	return
+}
+
 // TouchTempFile creates a temporary file
 func TouchTempFile() (string, error) {
 	file, err := ioutil.TempFile("", "hashi-test-")
@@ -74,13 +114,13 @@ func TouchTempFile() (string, error) {
 // CreateTempZip creates a zip file that contains a file
 func CreateTempZip(filenameInZip, content string) (string, error) {
 	tempFile, err := ioutil.TempFile("", "hashi-test-")
-	zipFile := ioutils.NewErrorWriter(tempFile, err)
+	zipFile := NewErrorWriter(tempFile, err)
 	defer ioutils.Close(tempFile)
 
 	zipWriter := zip.NewWriter(zipFile)
 	defer ioutils.Close(zipWriter)
 
-	fileWriter := ioutils.NewErrorWriter(zipWriter.Create(filenameInZip))
+	fileWriter := NewErrorWriter(zipWriter.Create(filenameInZip))
 	_, _ = fileWriter.Write([]byte(content))
 
 	if fileWriter.Err() != nil {
