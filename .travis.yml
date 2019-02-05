@@ -16,3 +16,6 @@ install:
 script:
   - make build
   - make coveralls
+
+notifications:
+  slack: $SLACK_TOKEN
